@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classroom Feedback Generator</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    input, button {
+      display: block;
+      width: 100%;
+      margin-bottom: 1rem;
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+    .feedback-box {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin-top: 1.5rem;
+    }
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <h1>Classroom Feedback Generator</h1>
+  <input id="videoUrl" placeholder="Video URL (MP4)" />
+  <input id="studentName" placeholder="Student Name" />
+  <input id="teacherName" placeholder="Teacher Name" />
+  <input id="lessonTopic" placeholder="Lesson Topic" />
+  <button onclick="submitFeedback()">Submit for Feedback</button>
+
+  <p id="error" class="error"></p>
+  <div id="feedback" class="feedback-box" style="display:none;"></div>
+
+  <script>
+    async function submitFeedback() {
+      const videoUrl = document.getElementById('videoUrl').value;
+      const studentName = document.getElementById('studentName').value;
+      const teacherName = document.getElementById('teacherName').value;
+      const lessonTopic = document.getElementById('lessonTopic').value;
+      const errorEl = document.getElementById('error');
+      const feedbackEl = document.getElementById('feedback');
+
+      errorEl.textContent = '';
+      feedbackEl.style.display = 'none';
+      feedbackEl.innerHTML = '';
+
+      try {
+        const res = await fetch("https://donghyunkim.app.n8n.cloud/webhook-test/19461011-7ab5-4e81-afd6-0f6aaa1f85eb", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            videoUrl,
+            studentName,
+            teacherName,
+            lessonTopic
+          })
+        });
+
+        if (!res.ok) throw new Error("Server error: " + res.status);
+        const data = await res.json();
+
+        feedbackEl.innerHTML = `<h2>AI Feedback</h2>
+          <p><strong>Student Feedback:</strong> ${data.student}</p>
+          <p><strong>Teacher Feedback:</strong> ${data.teacher}</p>`;
+        feedbackEl.style.display = 'block';
+      } catch (err) {
+        console.error(err);
+        errorEl.textContent = 'Failed to fetch feedback. Please check the video URL and try again.';
+      }
+    }
+  </script>
+</body>
+</html>
